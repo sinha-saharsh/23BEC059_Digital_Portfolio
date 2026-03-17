@@ -7,603 +7,409 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-
   :root {
-    --bg: #0d0d0d;
-    --surface: #161616;
-    --surface2: #1e1e1e;
-    --border: #2a2a2a;
-    --text: #e8e8e8;
-    --muted: #888;
-    --accent: #c8c8c8;
+    --bg: #0d0d0d; --surface: #161616; --surface2: #1e1e1e;
+    --border: #2a2a2a; --text: #e8e8e8; --muted: #888;
   }
 
-  body {
+  html, body {
+    width: 100%; height: 100%;
+    background: #000;
+    font-family: 'Courier New', monospace;
+    overflow: hidden;
+  }
+
+  /* 16:9 wrapper — scales to fill any screen */
+  .stage {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+  }
+  .canvas {
+    position: relative;
     background: var(--bg);
     color: var(--text);
-    font-family: 'Courier New', monospace;
-    min-height: 100vh;
+    overflow: hidden;
+    /* 16:9 via aspect-ratio; fill width, cap height */
+    width: 100%;
+    height: 100%;
   }
 
-  /* ── BANNER ── */
+  /* ── INNER SCROLL CONTAINER ── */
+  .inner {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* BANNER */
   .banner {
     position: relative;
     width: 100%;
-    height: 220px;
+    flex: 0 0 22%;
     overflow: hidden;
   }
-  .banner img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-  .banner-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.72);
-  }
+  .banner img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .banner-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.72); }
 
-  /* ── CORNER LABELS ── */
   .corner-gpa {
-    position: absolute;
-    top: 16px;
-    left: 20px;
-    font-size: 11px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--muted);
-    z-index: 10;
-    line-height: 1.2;
+    position: absolute; top: 8%; left: 1.5%;
+    font-size: clamp(8px, 0.9vw, 13px); letter-spacing: 2px;
+    text-transform: uppercase; color: var(--muted); z-index: 10; line-height: 1.1;
   }
-  .corner-gpa span { font-size: 36px; font-weight: bold; color: var(--text); display: block; letter-spacing: 1px; }
-
-  .corner-linkedin {
-    position: absolute;
-    top: 16px;
-    right: 20px;
-    z-index: 10;
+  .corner-gpa span {
+    font-size: clamp(20px, 3vw, 42px);
+    font-weight: bold; color: var(--text); display: block; letter-spacing: 1px;
   }
+  .corner-linkedin { position: absolute; top: 8%; right: 1.5%; z-index: 10; }
   .corner-linkedin a {
-    color: var(--text);
-    text-decoration: none;
-    font-size: 22px;
-    transition: color 0.2s;
+    color: var(--text); text-decoration: none;
+    font-size: clamp(16px, 2vw, 28px); transition: color 0.2s;
   }
   .corner-linkedin a:hover { color: #0a66c2; }
 
-  /* ── PROFILE ROW ── */
+  /* PROFILE */
   .profile-row {
     position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: -54px;
+    display: flex; flex-direction: column; align-items: center;
+    margin-top: -4%;
     z-index: 5;
-    padding-bottom: 4px;
+    flex: 0 0 auto;
+    padding-bottom: 0.5%;
   }
-
-  .profile-photo-wrap {
-    position: relative;
-    flex-shrink: 0;
-  }
+  .profile-photo-wrap { position: relative; flex-shrink: 0; }
   .profile-photo {
-    width: 108px;
-    height: 108px;
-    border-radius: 50%;
-    border: 3px solid var(--bg);
-    object-fit: cover;
-    display: block;
-    background: #222;
+    width: clamp(60px, 7vw, 100px);
+    height: clamp(60px, 7vw, 100px);
+    border-radius: 50%; border: 2px solid var(--bg);
+    object-fit: cover; display: block; background: #222;
   }
-
-  /* About icon trigger */
   .about-trigger {
-    position: absolute;
-    bottom: 4px;
-    right: 4px;
-    width: 26px;
-    height: 26px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 11px;
-    color: var(--muted);
-    transition: color 0.2s, background 0.2s;
-    z-index: 20;
+    position: absolute; bottom: 2px; right: 2px;
+    width: clamp(16px, 1.6vw, 24px); height: clamp(16px, 1.6vw, 24px);
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: clamp(7px, 0.7vw, 11px); color: var(--muted);
+    transition: color 0.2s, background 0.2s; z-index: 20;
   }
   .about-trigger:hover { color: var(--text); background: #2a2a2a; }
-
-  .name-block {
-    text-align: center;
-    margin-top: 10px;
-  }
+  .name-block { text-align: center; margin-top: 0.4%; }
   .name-block h1 {
-    font-size: 24px;
-    font-weight: normal;
-    letter-spacing: 2px;
-    color: var(--text);
+    font-size: clamp(12px, 1.4vw, 22px);
+    font-weight: normal; letter-spacing: 2px; color: var(--text);
   }
   .name-block p {
-    font-size: 12px;
-    color: var(--muted);
-    margin-top: 3px;
-    letter-spacing: 0.5px;
+    font-size: clamp(7px, 0.7vw, 11px);
+    color: var(--muted); margin-top: 1px; letter-spacing: 0.5px;
   }
 
-  /* ── DIVIDER LINE ── */
-  .divider {
-    border: none;
-    border-top: 1px solid var(--border);
-    margin: 16px 32px 0;
-  }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 0.8% 2% 0; }
 
-  /* ── ABOUT PANEL ── */
+  /* ABOUT PANEL */
   .about-panel {
-    overflow: hidden;
-    max-height: 0;
-    transition: max-height 0.45s ease, opacity 0.35s ease;
-    opacity: 0;
-    background: var(--surface);
+    overflow: hidden; max-height: 0;
+    transition: max-height 0.4s ease, opacity 0.3s ease;
+    opacity: 0; background: var(--surface);
     border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
   }
-  .about-panel.open {
-    max-height: 700px;
-    opacity: 1;
-  }
+  .about-panel.open { max-height: 40vh; opacity: 1; overflow-y: auto; }
   .about-inner {
-    padding: 20px 32px;
-    font-size: 13px;
-    line-height: 1.8;
-    color: var(--muted);
-    max-width: 860px;
-    margin: 0 auto;
+    padding: 1% 3%; font-size: clamp(8px, 0.75vw, 12px);
+    line-height: 1.7; color: var(--muted); max-width: 90%; margin: 0 auto;
   }
   .about-inner strong { color: var(--text); }
-  .about-lead { margin-bottom: 16px; }
-  .about-points { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-  .about-points li { display: flex; gap: 10px; }
-  .about-points li::before { content: '▸'; color: #555; flex-shrink: 0; margin-top: 2px; }
+  .about-lead { margin-bottom: 1%; }
+  .about-points { list-style: none; display: flex; flex-direction: column; gap: 0.4%; }
+  .about-points li { display: flex; gap: 8px; }
+  .about-points li::before { content: '▸'; color: #555; flex-shrink: 0; margin-top: 1px; }
 
-  /* ── SECTIONS ── */
+  /* SECTIONS */
   .sections {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
-    gap: 0;
+    display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;
     border-top: 1px solid var(--border);
-    margin-top: 20px;
+    flex: 0 0 auto;
   }
-
-  .section-card {
-    border-right: 1px solid var(--border);
-    padding: 24px 28px;
-    cursor: default;
-  }
+  .section-card { border-right: 1px solid var(--border); padding: 1.2% 1.8%; }
   .section-card:last-child { border-right: none; }
-
-  .section-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 14px;
-  }
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6%; }
   .section-title {
-    font-size: 11px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--muted);
+    font-size: clamp(7px, 0.65vw, 10px);
+    letter-spacing: 2px; text-transform: uppercase; color: var(--muted);
   }
   .section-btn {
-    font-size: 10px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    color: var(--muted);
-    background: none;
-    border: 1px solid var(--border);
-    padding: 3px 9px;
-    cursor: pointer;
-    font-family: inherit;
-    transition: color 0.2s, border-color 0.2s;
+    font-size: clamp(6px, 0.6vw, 9px); letter-spacing: 1px; text-transform: uppercase;
+    color: var(--muted); background: none; border: 1px solid var(--border);
+    padding: 2px 6px; cursor: pointer; font-family: inherit; transition: color 0.2s, border-color 0.2s;
   }
   .section-btn:hover { color: var(--text); border-color: #555; }
-
-  .section-preview {
-    font-size: 12.5px;
-    line-height: 1.7;
-    color: var(--muted);
-  }
-  .section-preview li {
-    list-style: none;
-    padding: 3px 0;
-    border-bottom: 1px solid var(--border);
-  }
+  .section-preview { font-size: clamp(7px, 0.7vw, 11px); line-height: 1.6; color: var(--muted); }
+  .section-preview li { list-style: none; padding: 2px 0; border-bottom: 1px solid var(--border); }
   .section-preview li:last-child { border-bottom: none; }
   .section-preview li::before { content: '— '; color: #444; }
 
-  /* ── DETAIL MODAL OVERLAY ── */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.88);
-    z-index: 100;
-    align-items: center;
-    justify-content: center;
-  }
-  .modal-overlay.open { display: flex; }
-
-  .modal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    width: 90%;
-    max-width: 640px;
-    max-height: 80vh;
-    overflow-y: auto;
-    padding: 32px 36px;
-    position: relative;
-  }
-  .modal-close {
-    position: absolute;
-    top: 14px;
-    right: 18px;
-    background: none;
-    border: none;
-    color: var(--muted);
-    font-size: 18px;
-    cursor: pointer;
-    font-family: inherit;
-  }
-  .modal-close:hover { color: var(--text); }
-
-  .modal h2 {
-    font-size: 12px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 20px;
-    font-weight: normal;
-  }
-
-  .modal-item {
-    margin-bottom: 22px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--border);
-  }
-  .modal-item:last-child { border-bottom: none; margin-bottom: 0; }
-
-  .modal-item-title {
-    font-size: 14px;
-    color: var(--text);
-    margin-bottom: 4px;
-    letter-spacing: 0.5px;
-  }
-  .modal-item-sub {
-    font-size: 11px;
-    color: var(--muted);
-    margin-bottom: 8px;
-    letter-spacing: 0.5px;
-  }
-  .modal-item-body {
-    font-size: 12.5px;
-    color: #aaa;
-    line-height: 1.7;
-  }
-  .modal-item-body li { list-style: none; padding: 2px 0; }
-  .modal-item-body li::before { content: '→ '; color: #555; }
-
-  /* ── CAROUSEL ── */
+  /* CAROUSEL */
   .carousel-section {
     border-top: 1px solid var(--border);
-    padding: 28px 32px 24px;
+    padding: 1% 2% 0.8%;
+    flex: 1 1 0;
+    display: flex; flex-direction: column;
+    min-height: 0;
   }
   .carousel-label {
-    font-size: 10px;
-    letter-spacing: 3px;
-    color: var(--muted);
-    margin-bottom: 18px;
+    font-size: clamp(6px, 0.6vw, 9px); letter-spacing: 3px;
+    color: var(--muted); margin-bottom: 0.5%; flex-shrink: 0;
   }
   .carousel-track-wrap {
-    position: relative;
-    width: 100%;
-    overflow: hidden;
+    position: relative; width: 100%;
+    flex: 1 1 0; overflow: hidden; min-height: 0;
   }
-  .carousel-track {
-    display: flex;
-    transition: transform 0.5s ease;
-  }
+  .carousel-track { display: flex; height: 100%; transition: transform 0.5s ease; }
   .carousel-slide {
-    min-width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
+    min-width: 100%; height: 100%;
+    display: flex; flex-direction: column; align-items: center; gap: 0.5%;
   }
   .carousel-slide img {
-    width: 100%;
-    max-height: 480px;
-    object-fit: contain;
-    display: block;
-    background: #0d0d0d;
+    flex: 1 1 0; min-height: 0;
+    max-width: 100%; object-fit: contain;
+    display: block; background: var(--bg);
   }
   .carousel-caption {
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 0.5px;
-    text-align: center;
-    padding: 0 40px;
+    font-size: clamp(6px, 0.6vw, 10px); color: var(--muted);
+    letter-spacing: 0.5px; text-align: center; padding: 0 5%; flex-shrink: 0;
   }
   .carousel-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(0,0,0,0.6);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    font-size: 18px;
-    width: 36px;
-    height: 36px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: color 0.2s, border-color 0.2s;
-    font-family: inherit;
+    position: absolute; top: 48%; transform: translateY(-50%);
+    background: rgba(0,0,0,0.55); border: 1px solid var(--border);
+    color: var(--muted); font-size: clamp(12px, 1.2vw, 18px);
+    width: clamp(24px, 2.5vw, 36px); height: clamp(24px, 2.5vw, 36px);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: color 0.2s, border-color 0.2s; font-family: inherit;
   }
   .carousel-btn:hover { color: var(--text); border-color: #555; }
-  .carousel-btn.prev { left: 8px; }
-  .carousel-btn.next { right: 8px; }
-  .carousel-dots {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 14px;
-  }
-  .carousel-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--border);
-    cursor: pointer;
-    transition: background 0.2s;
-  }
+  .carousel-btn.prev { left: 6px; }
+  .carousel-btn.next { right: 6px; }
+  .carousel-dots { display: flex; justify-content: center; gap: 6px; margin-top: 0.4%; flex-shrink: 0; }
+  .carousel-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--border); cursor: pointer; transition: background 0.2s; }
   .carousel-dot.active { background: var(--muted); }
 
-  /* ── CONTACT FOOTER ── */
+  /* CONTACT FOOTER */
   .contact-footer {
-    border-top: 1px solid var(--border);
-    padding: 20px 32px;
-    display: flex;
-    gap: 32px;
-    flex-wrap: wrap;
+    border-top: 1px solid var(--border); padding: 0.6% 2%;
+    display: flex; gap: 2.5%; flex-wrap: wrap; align-items: center;
+    flex-shrink: 0;
   }
   .contact-item {
-    font-size: 11px;
-    color: var(--muted);
-    text-decoration: none;
-    letter-spacing: 0.5px;
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    transition: color 0.2s;
+    font-size: clamp(7px, 0.65vw, 10px); color: var(--muted);
+    text-decoration: none; letter-spacing: 0.3px;
+    display: flex; align-items: center; gap: 5px; transition: color 0.2s;
   }
   .contact-item:hover { color: var(--text); }
-  .contact-item i { font-size: 12px; }
+  .contact-item i { font-size: clamp(7px, 0.65vw, 10px); }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.88); z-index: 100;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border);
+    width: 90%; max-width: 600px; max-height: 80vh;
+    overflow-y: auto; padding: 28px 32px; position: relative;
+  }
+  .modal-close {
+    position: absolute; top: 12px; right: 16px; background: none;
+    border: none; color: var(--muted); font-size: 16px; cursor: pointer; font-family: inherit;
+  }
+  .modal-close:hover { color: var(--text); }
+  .modal h2 { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 18px; font-weight: normal; }
+  .modal-item { margin-bottom: 20px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
+  .modal-item:last-child { border-bottom: none; margin-bottom: 0; }
+  .modal-item-title { font-size: 13px; color: var(--text); margin-bottom: 3px; }
+  .modal-item-sub { font-size: 10px; color: var(--muted); margin-bottom: 7px; }
+  .modal-item-body { font-size: 12px; color: #aaa; line-height: 1.7; }
+  .modal-item-body li { list-style: none; padding: 2px 0; }
+  .modal-item-body li::before { content: '→ '; color: #555; }
 </style>
 </head>
 <body>
 
-<!-- BANNER -->
-<div class="banner">
-  <img src="https://images.unsplash.com/photo-1457364887197-9150188c107b?q=80&w=1470&auto=format&fit=crop" alt="banner">
-  <div class="banner-overlay"></div>
-  <!-- GPA top-left -->
-  <div class="corner-gpa">GPA &nbsp;<span>7.9</span></div>
-  <!-- LinkedIn top-right -->
-  <div class="corner-linkedin">
-    <a href="https://www.linkedin.com/in/saharsh--sinha/" target="_blank" title="LinkedIn">
-      <i class="fab fa-linkedin"></i>
-    </a>
-  </div>
-</div>
+<div class="stage">
+ <div class="canvas">
+  <div class="inner">
 
-<!-- PROFILE ROW -->
-<div class="profile-row">
-  <div class="profile-photo-wrap">
-    <img class="profile-photo"
-         src="https://media.licdn.com/dms/image/v2/D4D03AQG1ns423RXvPA/profile-displayphoto-shrink_400_400/B4DZPG.A_HHcAg-/0/1734209967039?e=1775088000&v=beta&t=YIHwY4d0x5O13Dgp04ZCLBKjigDxdmERmxouIMtg6qs"
-         alt="Saharsh Sinha"
-         onerror="this.style.background='#333';this.src=''">
-    <!-- About icon -->
-    <div class="about-trigger" id="aboutTrigger" title="About me">
-      <i class="fas fa-info"></i>
-    </div>
-  </div>
-  <div class="name-block">
-    <h1>SAHARSH SINHA</h1>
-    <p>Electronics &amp; Communication · PDEU · Aerospace</p>
-  </div>
-</div>
-
-<hr class="divider">
-
-<!-- ABOUT PANEL -->
-<div class="about-panel" id="aboutPanel">
-  <div class="about-inner">
-    <p class="about-lead">I am an Electronics and Communication Engineering student at Pandit Deendayal Energy University, deeply invested in the intersection of hardware systems and aerospace technology. As a dedicated researcher and practitioner in rocket propulsion and control systems, I bridge the gap between theoretical design and hands-on implementation. My experience ranges from conducting cold flow testing of fuel injectors to managing high-level technical documentation for national-level rocketry competitions.</p>
-    <ul class="about-points">
-      <li><div><strong>Academic Foundation:</strong> Currently pursuing a B.Tech at PDEU (2023–Present), focusing on the integration of electronics within aerospace frameworks.</div></li>
-      <li><div><strong>Technical Leadership:</strong> Serve as the Vice President of Apogee3, where I oversee technical projects and strategic operations for the university's aerospace club.</div></li>
-      <li><div><strong>Engineering Expertise:</strong> Proficient in propulsion system design, recovery logic, and rapid prototyping using FDM 3D printing and SolidWorks.</div></li>
-      <li><div><strong>Practical Experience:</strong> Completed an internship at Thrustworks Dynetics, gaining field experience in injector testing and vendor management within the manufacturing sector.</div></li>
-      <li><div><strong>Project Success:</strong> Key contributor to the InSpace Rocketry Competition team, successfully navigating the Preliminary and Critical Design Reviews (PDR/CDR) toward a final flight launch.</div></li>
-      <li><div><strong>Communication &amp; Mentorship:</strong> Experienced in technical writing and public speaking, evidenced by leading a hands-on rocket workshop for over 60 students.</div></li>
-    </ul>
-  </div>
-</div>
-
-<!-- FOUR SECTIONS -->
-<div class="sections">
-
-  <!-- INTERESTS -->
-  <div class="section-card">
-    <div class="section-header">
-      <span class="section-title">Interests</span>
-      <button class="section-btn" onclick="openModal('interests')">View →</button>
-    </div>
-    <ul class="section-preview">
-      <li>Rocket Propulsion</li>
-      <li>Aerospace Systems</li>
-      <li>CAD & Simulation</li>
-      <li>Embedded Systems</li>
-    </ul>
-  </div>
-
-  <!-- EDUCATION & EXPERIENCE -->
-  <div class="section-card">
-    <div class="section-header">
-      <span class="section-title">Education & Exp.</span>
-      <button class="section-btn" onclick="openModal('education')">View →</button>
-    </div>
-    <ul class="section-preview">
-      <li>B.Tech ECE · PDEU</li>
-      <li>Thrustworks Dynetics</li>
-      <li>Apogee3 VP</li>
-      <li>GPA 7.9</li>
-    </ul>
-  </div>
-
-  <!-- PROJECTS -->
-  <div class="section-card">
-    <div class="section-header">
-      <span class="section-title">Projects</span>
-      <button class="section-btn" onclick="openModal('projects')">View →</button>
-    </div>
-    <ul class="section-preview">
-      <li>InSpace Rocketry</li>
-      <li>Fin Control System</li>
-      <li>Injector Testing</li>
-      <li>Rocket Workshop</li>
-    </ul>
-  </div>
-
-  <!-- SKILLS -->
-  <div class="section-card">
-    <div class="section-header">
-      <span class="section-title">Skills</span>
-      <button class="section-btn" onclick="openModal('skills')">View →</button>
-    </div>
-    <ul class="section-preview">
-      <li>Python · C · MATLAB</li>
-      <li>SolidWorks · Fusion360</li>
-      <li>Ansys CFD / FEA</li>
-      <li>FDM 3D Printing</li>
-    </ul>
-  </div>
-
-</div>
-
-<!-- CAROUSEL -->
-<div class="carousel-section">
-  <div class="carousel-label">PROJECT GALLERY</div>
-  <div class="carousel-track-wrap">
-    <div class="carousel-track" id="carouselTrack">
-      <div class="carousel-slide active">
-        <img src="img1.png" alt="ESP32 Avionics Board">
-        <div class="carousel-caption">ESP-32 Avionics PCB — custom board for rocket avionics</div>
-      </div>
-      <div class="carousel-slide">
-        <img src="img2.png" alt="Injector CAD">
-        <div class="carousel-caption">Injector CAD — SolidWorks section view of fuel injector design</div>
-      </div>
-      <div class="carousel-slide">
-        <img src="img3.png" alt="Thrustworks Team">
-        <div class="carousel-caption">Thrustworks Dynetics — team at Pune during internship</div>
-      </div>
-      <div class="carousel-slide">
-        <img src="img4.png" alt="Motor Static Fire">
-        <div class="carousel-caption">Static Fire Test — solid rocket motor ignition on test stand</div>
-      </div>
-      <div class="carousel-slide">
-        <img src="img5.png" alt="Rocket on Pad">
-        <div class="carousel-caption">Launch Pad — rocket ready for flight</div>
+    <!-- BANNER -->
+    <div class="banner">
+      <img src="https://images.unsplash.com/photo-1457364887197-9150188c107b?q=80&w=1470&auto=format&fit=crop" alt="banner">
+      <div class="banner-overlay"></div>
+      <div class="corner-gpa">GPA <span>7.9</span></div>
+      <div class="corner-linkedin">
+        <a href="https://www.linkedin.com/in/saharsh--sinha/" target="_blank" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
       </div>
     </div>
-    <button class="carousel-btn prev" id="prevBtn">&#8592;</button>
-    <button class="carousel-btn next" id="nextBtn">&#8594;</button>
-  </div>
-  <div class="carousel-dots" id="carouselDots"></div>
-</div>
 
-<!-- CONTACT FOOTER -->
-<div class="contact-footer">
-  <a href="/cdn-cgi/l/email-protection#e89b8980899a9b80839e9b898aa88f85898184c68b8785" class="contact-item"><i class="fas fa-envelope"></i> <span class="__cf_email__" data-cfemail="b6c5d7ded7c4c5deddc0c5d7d4f6d1dbd7dfda98d5d9db">[email&#160;protected]</span></a>
-  <a href="/cdn-cgi/l/email-protection#1b2928797e782b2e225b68746f356b7f6b6e357a78357275" class="contact-item"><i class="fas fa-university"></i> <span class="__cf_email__" data-cfemail="ebd9d8898e88dbded2ab98849fc59b8f9b9ec58a88c58285">[email&#160;protected]</span></a>
-  <a href="tel:+919664538616" class="contact-item"><i class="fas fa-phone"></i> +91 96645 38616</a>
-  <a href="https://www.linkedin.com/in/saharsh--sinha/" target="_blank" class="contact-item"><i class="fab fa-linkedin"></i> LinkedIn</a>
+    <!-- PROFILE -->
+    <div class="profile-row">
+      <div class="profile-photo-wrap">
+        <img class="profile-photo" src="https://media.licdn.com/dms/image/v2/D4D03AQG1ns423RXvPA/profile-displayphoto-shrink_400_400/B4DZPG.A_HHcAg-/0/1734209967039?e=1775088000&v=beta&t=YIHwY4d0x5O13Dgp04ZCLBKjigDxdmERmxouIMtg6qs" alt="Saharsh Sinha">
+        <div class="about-trigger" id="aboutTrigger" title="About me"><i class="fas fa-info"></i></div>
+      </div>
+      <div class="name-block">
+        <h1>SAHARSH SINHA</h1>
+        <p>Electronics &amp; Communication · PDEU · Aerospace</p>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- ABOUT PANEL -->
+    <div class="about-panel" id="aboutPanel">
+      <div class="about-inner">
+        <p class="about-lead">I am an Electronics and Communication Engineering student at Pandit Deendayal Energy University, deeply invested in the intersection of hardware systems and aerospace technology. As a dedicated researcher and practitioner in rocket propulsion and control systems, I bridge the gap between theoretical design and hands-on implementation.</p>
+        <ul class="about-points">
+          <li><div><strong>Academic Foundation:</strong> Currently pursuing a B.Tech at PDEU (2023–Present), focusing on the integration of electronics within aerospace frameworks.</div></li>
+          <li><div><strong>Technical Leadership:</strong> Vice President of Apogee3, overseeing technical projects and strategic operations for PDEU's aerospace club.</div></li>
+          <li><div><strong>Engineering Expertise:</strong> Proficient in propulsion system design, recovery logic, and rapid prototyping using FDM 3D printing and SolidWorks.</div></li>
+          <li><div><strong>Practical Experience:</strong> Interned at Thrustworks Dynetics — injector testing and vendor management in Pune.</div></li>
+          <li><div><strong>Project Success:</strong> Key contributor to InSpace Rocketry Competition, cleared PDR and CDR, currently in Final Flight Review phase.</div></li>
+          <li><div><strong>Communication &amp; Mentorship:</strong> Led a hands-on rocket workshop for 60+ students.</div></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- FOUR SECTIONS -->
+    <div class="sections">
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">Interests</span>
+          <button class="section-btn" onclick="openModal('interests')">View →</button>
+        </div>
+        <ul class="section-preview">
+          <li>Rocket Propulsion</li><li>Aerospace Systems</li><li>CAD &amp; Simulation</li><li>Embedded Systems</li>
+        </ul>
+      </div>
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">Education &amp; Exp.</span>
+          <button class="section-btn" onclick="openModal('education')">View →</button>
+        </div>
+        <ul class="section-preview">
+          <li>B.Tech ECE · PDEU</li><li>Thrustworks Dynetics</li><li>Apogee3 VP</li><li>GPA 7.9</li>
+        </ul>
+      </div>
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">Projects</span>
+          <button class="section-btn" onclick="openModal('projects')">View →</button>
+        </div>
+        <ul class="section-preview">
+          <li>InSpace Rocketry</li><li>Fin Control System</li><li>Injector Testing</li><li>Rocket Workshop</li>
+        </ul>
+      </div>
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">Skills</span>
+          <button class="section-btn" onclick="openModal('skills')">View →</button>
+        </div>
+        <ul class="section-preview">
+          <li>Python · C · MATLAB</li><li>SolidWorks · Fusion360</li><li>Ansys CFD / FEA</li><li>FDM 3D Printing</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- CAROUSEL -->
+    <div class="carousel-section">
+      <div class="carousel-label">PROJECT GALLERY</div>
+      <div class="carousel-track-wrap">
+        <div class="carousel-track" id="carouselTrack">
+          <div class="carousel-slide">
+            <img src="1.png" alt="ESP32 Avionics Board">
+            <div class="carousel-caption">ESP-32 Avionics PCB — custom board for rocket avionics</div>
+          </div>
+          <div class="carousel-slide">
+            <img src="2.png" alt="Injector CAD">
+            <div class="carousel-caption">Injector CAD — SolidWorks section view of fuel injector design</div>
+          </div>
+          <div class="carousel-slide">
+            <img src="3.png" alt="Thrustworks Team">
+            <div class="carousel-caption">Thrustworks Dynetics — team dinner at Pune during internship</div>
+          </div>
+          <div class="carousel-slide">
+            <img src="4.png" alt="Motor Static Fire">
+            <div class="carousel-caption">Static Fire Test — solid rocket motor ignition on test stand</div>
+          </div>
+          <div class="carousel-slide">
+            <img src="5.png" alt="Rocket on Pad">
+            <div class="carousel-caption">Launch Pad — rocket ready for flight</div>
+          </div>
+        </div>
+        <button class="carousel-btn prev" id="prevBtn">&#8592;</button>
+        <button class="carousel-btn next" id="nextBtn">&#8594;</button>
+      </div>
+      <div class="carousel-dots" id="carouselDots"></div>
+    </div>
+
+    <!-- CONTACT FOOTER -->
+    <div class="contact-footer">
+      <a href="/cdn-cgi/l/email-protection#5c2f3d343d2e2f34372a2f3d3e1c3b313d3530723f3331" class="contact-item"><i class="fas fa-envelope"></i> <span class="__cf_email__" data-cfemail="dcafbdb4bdaeafb4b7aaafbdbe9cbbb1bdb5b0f2bfb3b1">[email&#160;protected]</span></a>
+      <a href="/cdn-cgi/l/email-protection#34060756515704010d74475b401a445044411a55571a5d5a" class="contact-item"><i class="fas fa-university"></i> <span class="__cf_email__" data-cfemail="3b0908595e580b0e027b48544f154b5f4b4e155a58155255">[email&#160;protected]</span></a>
+      <a href="tel:+919664538616" class="contact-item"><i class="fas fa-phone"></i> +91 96645 38616</a>
+      <a href="https://www.linkedin.com/in/saharsh--sinha/" target="_blank" class="contact-item"><i class="fab fa-linkedin"></i> LinkedIn</a>
+    </div>
+
+  </div>
+ </div>
 </div>
 
 <!-- MODAL -->
 <div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
   <div class="modal" id="modalBox">
-    <button class="modal-close" onclick="closeModal()">✕</button>
+    <button class="modal-close" onclick="closeModal()">&#x2715;</button>
     <h2 id="modalTitle"></h2>
     <div id="modalContent"></div>
   </div>
 </div>
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-  // About panel toggle
   const trigger = document.getElementById('aboutTrigger');
   const panel = document.getElementById('aboutPanel');
   let aboutOpen = false;
-  trigger.addEventListener('click', () => {
-    aboutOpen = !aboutOpen;
-    panel.classList.toggle('open', aboutOpen);
-  });
+  trigger.addEventListener('click', () => { aboutOpen = !aboutOpen; panel.classList.toggle('open', aboutOpen); });
 
-  // Modal data
   const modalData = {
-    interests: {
-      title: 'Interests',
-      items: [
-        { title: 'Rocket Propulsion', sub: '', body: 'Working on solid rocket motor design, propellant selection, and motor testing as part of the InSpace competition team.' },
-        { title: 'Aerospace Systems Design', sub: '', body: 'Recovery systems, fin control, and structural analysis of sounding rockets using SolidWorks and Ansys.' },
-        { title: 'CAD & Simulation', sub: 'SolidWorks · Fusion360 · Ansys CFD/FEA', body: 'Designing mechanical components for test rigs, adapters, and rocket assemblies. CFD and FEA for structural validation.' },
-        { title: 'Embedded & Control Systems', sub: 'Python · C · MATLAB', body: 'Interest in avionics, sensor integration, and control logic for active fin stabilization systems.' },
-        { title: 'Manufacturing & Prototyping', sub: 'FDM 3D Printing · Lathe · Drilling', body: 'Hands-on experience with rapid prototyping and basic machining operations acquired during internship at Thrustworks Dynetics.' },
-      ]
-    },
-    education: {
-      title: 'Education & Experience',
-      items: [
-        { title: 'Pandit Deendayal Energy University', sub: 'B.Tech · Electronics & Communication Engineering · 2023 – Present', body: 'Pursuing a four-year undergraduate degree in ECE at PDEU, Gandhinagar. Current GPA: 7.9.' },
-        { title: 'Thrustworks Dynetics', sub: 'Operational & Designer Intern · May – July 2025 · Pune, India', body: '<ul><li>Conducted cold flow testing of fuel and oxidizer injectors</li><li>Designed new test adapters for injector rigs</li><li>Gained proficiency in FDM 3D printing for rapid prototyping</li><li>Interacted with vendors and manufacturers in MIDC</li></ul>' },
-        { title: 'Apogee3 – Aerospace Club of PDEU', sub: 'Vice President · 2025 – Present', body: '<ul><li>Oversee and coordinate multiple technical sub-teams</li><li>Strategic planning and management of club operations</li><li>Working on solid rocket propulsion and active fin control</li></ul>' },
-        { title: 'InSpace Rocketry Competition – PDEU Team', sub: 'Recovery & Propulsion Team Member · Feb 2024 – Present', body: '<ul><li>Responsible for designing propulsion system parameters and recovery logic</li><li>Authored key sections of the PDR for InSpace 2025</li><li>Cleared PDR and CDR; currently in Final Flight Review phase</li><li>Collaborated on motor testing and propulsion planning</li></ul>' },
-      ]
-    },
-    projects: {
-      title: 'Projects',
-      items: [
-        { title: 'InSpace Rocketry Competition', sub: 'Recovery & Propulsion Team Member · Feb 2024 – Present', body: '<ul><li>Designed propulsion system parameters and recovery logic</li><li>Authored key sections of the PDR for InSpace 2025</li><li>Cleared PDR and CDR; currently in Final Flight Review phase</li><li>Collaborated on motor testing and propulsion planning</li></ul>' },
-        { title: 'Active Fin Control System', sub: 'Apogee3 · Ongoing', body: 'Working on control logic and avionics integration for active fin stabilization on sounding rockets. Involves sensor feedback, embedded systems, and SolidWorks fin geometry.' },
-        { title: 'Injector Cold Flow Testing', sub: 'Thrustworks Dynetics · 2025', body: 'Designed and tested fuel and oxidizer injectors through cold flow rigs. Fabricated custom test adapters via FDM printing and machining.' },
-        { title: 'Rocket Workshop', sub: 'Organizer · 60+ Students', body: 'Planned and conducted a 3-day hands-on rocket workshop for over 60 students, covering fundamentals of propulsion, recovery, and rocket assembly.' },
-      ]
-    },
-    skills: {
-      title: 'Skills',
-      items: [
-        { title: 'Programming', sub: '', body: '<ul><li>Python</li><li>C</li><li>JavaScript</li><li>MATLAB</li></ul>' },
-        { title: 'Design & Simulation', sub: '', body: '<ul><li>SolidWorks</li><li>Fusion360</li><li>Ansys CFD</li><li>Ansys FEA</li></ul>' },
-        { title: 'Manufacturing & Workshop', sub: '', body: '<ul><li>FDM 3D Printing</li><li>Lathe (Basic Operation)</li><li>Grinder (Basic Operation)</li><li>Drilling Machine (Basic Operation)</li></ul>' },
-        { title: 'Soft Skills', sub: '', body: '<ul><li>Technical Documentation & Writing</li><li>Public Speaking</li><li>Leadership & Team Management</li><li>Microsoft Excel</li></ul>' },
-      ]
-    }
+    interests: { title: 'Interests', items: [
+      { title: 'Rocket Propulsion', sub: '', body: 'Working on solid rocket motor design, propellant selection, and motor testing as part of the InSpace competition team.' },
+      { title: 'Aerospace Systems Design', sub: '', body: 'Recovery systems, fin control, and structural analysis of sounding rockets using SolidWorks and Ansys.' },
+      { title: 'CAD & Simulation', sub: 'SolidWorks · Fusion360 · Ansys CFD/FEA', body: 'Designing mechanical components for test rigs, adapters, and rocket assemblies. CFD and FEA for structural validation.' },
+      { title: 'Embedded & Control Systems', sub: 'Python · C · MATLAB', body: 'Interest in avionics, sensor integration, and control logic for active fin stabilization systems.' },
+      { title: 'Manufacturing & Prototyping', sub: 'FDM 3D Printing · Lathe · Drilling', body: 'Hands-on experience with rapid prototyping and basic machining acquired during internship at Thrustworks Dynetics.' },
+    ]},
+    education: { title: 'Education & Experience', items: [
+      { title: 'Pandit Deendayal Energy University', sub: 'B.Tech · Electronics & Communication Engineering · 2023 – Present', body: 'Pursuing a four-year undergraduate degree in ECE at PDEU, Gandhinagar. Current GPA: 7.9.' },
+      { title: 'Thrustworks Dynetics', sub: 'Operational & Designer Intern · May – July 2025 · Pune, India', body: '<ul><li>Conducted cold flow testing of fuel and oxidizer injectors</li><li>Designed new test adapters for injector rigs</li><li>Gained proficiency in FDM 3D printing for rapid prototyping</li><li>Interacted with vendors and manufacturers in MIDC</li></ul>' },
+      { title: 'Apogee3 – Aerospace Club of PDEU', sub: 'Vice President · 2025 – Present', body: '<ul><li>Oversee and coordinate multiple technical sub-teams</li><li>Strategic planning and management of club operations</li><li>Working on solid rocket propulsion and active fin control</li></ul>' },
+      { title: 'InSpace Rocketry Competition – PDEU Team', sub: 'Recovery & Propulsion Team Member · Feb 2024 – Present', body: '<ul><li>Responsible for designing propulsion system parameters and recovery logic</li><li>Authored key sections of the PDR for InSpace 2025</li><li>Cleared PDR and CDR; currently in Final Flight Review phase</li><li>Collaborated on motor testing and propulsion planning</li></ul>' },
+    ]},
+    projects: { title: 'Projects', items: [
+      { title: 'InSpace Rocketry Competition', sub: 'Recovery & Propulsion Team Member · Feb 2024 – Present', body: '<ul><li>Designed propulsion system parameters and recovery logic</li><li>Authored key sections of the PDR for InSpace 2025</li><li>Cleared PDR and CDR; currently in Final Flight Review phase</li><li>Collaborated on motor testing and propulsion planning</li></ul>' },
+      { title: 'Active Fin Control System', sub: 'Apogee3 · Ongoing', body: 'Working on control logic and avionics integration for active fin stabilization on sounding rockets. Involves sensor feedback, embedded systems, and SolidWorks fin geometry.' },
+      { title: 'Injector Cold Flow Testing', sub: 'Thrustworks Dynetics · 2025', body: 'Designed and tested fuel and oxidizer injectors through cold flow rigs. Fabricated custom test adapters via FDM printing and machining.' },
+      { title: 'Rocket Workshop', sub: 'Organizer · 60+ Students', body: 'Planned and conducted a 3-day hands-on rocket workshop for over 60 students, covering fundamentals of propulsion, recovery, and rocket assembly.' },
+    ]},
+    skills: { title: 'Skills', items: [
+      { title: 'Programming', sub: '', body: '<ul><li>Python</li><li>C</li><li>JavaScript</li><li>MATLAB</li></ul>' },
+      { title: 'Design & Simulation', sub: '', body: '<ul><li>SolidWorks</li><li>Fusion360</li><li>Ansys CFD</li><li>Ansys FEA</li></ul>' },
+      { title: 'Manufacturing & Workshop', sub: '', body: '<ul><li>FDM 3D Printing</li><li>Lathe (Basic Operation)</li><li>Grinder (Basic Operation)</li><li>Drilling Machine (Basic Operation)</li></ul>' },
+      { title: 'Soft Skills', sub: '', body: '<ul><li>Technical Documentation & Writing</li><li>Public Speaking</li><li>Leadership & Team Management</li><li>Microsoft Excel</li></ul>' },
+    ]}
   };
 
   function openModal(key) {
@@ -611,11 +417,36 @@
     document.getElementById('modalTitle').textContent = data.title;
     let html = '';
     data.items.forEach(item => {
-      html += `<div class="modal-item">
-        <div class="modal-item-title">${item.title}</div>
-        ${item.sub ? `<div class="modal-item-sub">${item.sub}</div>` : ''}
-        <div class="modal-item-body">${item.body}</div>
-      </div>`;
+      html += `<div class="modal-item"><div class="modal-item-title">${item.title}</div>${item.sub ? `<div class="modal-item-sub">${item.sub}</div>` : ''}<div class="modal-item-body">${item.body}</div></div>`;
     });
     document.getElementById('modalContent').innerHTML = html;
-    docume
+    document.getElementById('modalOverlay').classList.add('open');
+  }
+  function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+  function closeModalOutside(e) { if (e.target === document.getElementById('modalOverlay')) closeModal(); }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+  const track = document.getElementById('carouselTrack');
+  const slides = track.querySelectorAll('.carousel-slide');
+  const dotsContainer = document.getElementById('carouselDots');
+  let current = 0, autoTimer;
+
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'carousel-dot' + (i === 0 ? ' active' : '');
+    d.addEventListener('click', () => { goTo(i); resetTimer(); });
+    dotsContainer.appendChild(d);
+  });
+
+  function goTo(n) {
+    current = (n + slides.length) % slides.length;
+    track.style.transform = `translateX(-${current * 100}%)`;
+        dotsContainer.querySelectorAll('.carousel-dot').forEach((d, i) => d.classList.toggle('active', i === current));
+  }
+  document.getElementById('prevBtn').addEventListener('click', () => { goTo(current - 1); resetTimer(); });
+  document.getElementById('nextBtn').addEventListener('click', () => { goTo(current + 1); resetTimer(); });
+  function resetTimer() { clearInterval(autoTimer); autoTimer = setInterval(() => goTo(current + 1), 4000); }
+  resetTimer();
+</script>
+</body>
+</html>
